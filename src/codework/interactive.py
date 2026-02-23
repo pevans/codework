@@ -56,6 +56,8 @@ def prompt_all() -> ExerciseOptions:
     algorithms = questionary.checkbox(
         "Algorithms:",
         choices=list(ALGORITHMS),
+        instruction="(Space to select, Enter to confirm)",
+        validate=lambda v: len(v) > 0 or "At least one algorithm is required.",
     ).unsafe_ask()
 
     length = questionary.select(
