@@ -1,0 +1,150 @@
+import argparse
+import sys
+from pathlib import Path
+
+from codework.interactive import prompt_all
+from codework.plan import (
+    ALGORITHMS,
+    DEFAULT_STORY,
+    ENVIRONMENTS,
+    INFRASTRUCTURES,
+    LENGTHS,
+    PROJECT_STAGES,
+    ExerciseOptions,
+    ExercisePlan,
+)
+from codework.runner import dry_run, execute
+from codework.spec import render_spec
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate code exercises")
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        help="Collect all options via interactive prompts",
+    )
+    parser.add_argument(
+        "output_dir",
+        nargs="?",
+        type=Path,
+        help="Directory to write the exercise files into",
+    )
+    parser.add_argument(
+        "--environment",
+        choices=ENVIRONMENTS,
+        help="Target environment for the exercise (required without -i)",
+    )
+    parser.add_argument(
+        "--infrastructure",
+        choices=INFRASTRUCTURES,
+        help="Infrastructure target for the exercise (required without -i)",
+    )
+    parser.add_argument(
+        "--project-stage",
+        choices=PROJECT_STAGES,
+        help="Project stage for the exercise (required without -i)",
+    )
+    parser.add_argument(
+        "--language",
+        dest="languages",
+        action="append",
+        metavar="LANGUAGE",
+        help="Programming language for the exercise (required without -i; may be repeated)",
+    )
+    parser.add_argument(
+        "--technology",
+        dest="technologies",
+        action="append",
+        metavar="TECHNOLOGY",
+        default=[],
+        help="Framework or library used in the exercise (may be repeated)",
+    )
+    parser.add_argument(
+        "--algorithm",
+        dest="algorithms",
+        action="append",
+        choices=ALGORITHMS,
+        metavar="ALGORITHM",
+        default=[],
+        help=f"Algorithm to test with (may be repeated); choices: {', '.join(ALGORITHMS)}",
+    )
+    parser.add_argument(
+        "--length",
+        choices=LENGTHS,
+        help="Length of the exercise: short or long (required without -i)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print what would be written without touching the filesystem",
+    )
+    args = parser.parse_args()
+
+    try:
+        if args.interactive:
+            opts = prompt_all()
+            # CLI flag takes precedence over the in-prompt answer.
+            if args.dry_run:
+                opts["dry_run"] = True
+        else:
+            missing = []
+            if args.output_dir is None:
+                missing.append("output_dir (positional)")
+            if args.environment is None:
+                missing.append("--environment")
+            if args.infrastructure is None:
+                missing.append("--infrastructure")
+            if args.project_stage is None:
+                missing.append("--project-stage")
+            if not args.languages:
+                missing.append("--language")
+            if args.length is None:
+                missing.append("--length")
+            if missing:
+                parser.error(
+                    "the following arguments are required: "
+                    + ", ".join(missing)
+                    + " (or pass -i / --interactive)"
+                )
+            opts = ExerciseOptions(
+                output_dir=args.output_dir,
+                environment=args.environment,
+                infrastructure=args.infrastructure,
+                project_stage=args.project_stage,
+                languages=args.languages,
+                technologies=args.technologies,
+                algorithms=args.algorithms,
+                length=args.length,
+                story=DEFAULT_STORY,
+                dry_run=args.dry_run,
+            )
+
+        plan = ExercisePlan(
+            root=opts["output_dir"],
+            environment=opts["environment"],
+            infrastructure=opts["infrastructure"],
+            project_stage=opts["project_stage"],
+            length=opts["length"],
+            languages=opts["languages"],
+            technologies=opts["technologies"],
+            algorithms=opts["algorithms"],
+            story=opts["story"],
+        )
+
+        plan.add_file(
+            path="SPEC.md",
+            description="Machine-readable spec for LLM-assisted exercise generation",
+            content=render_spec(plan),
+        )
+
+        if opts["dry_run"]:
+            dry_run(plan)
+        else:
+            execute(plan)
+    except KeyboardInterrupt:
+        raise SystemExit(0)
+    except (OSError, RuntimeError) as e:
+        print(f"error: {e}", file=sys.stderr)
+        raise SystemExit(1)
