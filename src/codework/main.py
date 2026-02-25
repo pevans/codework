@@ -8,7 +8,6 @@ from codework.plan import (
     DEFAULT_STORY,
     ENVIRONMENTS,
     INFRASTRUCTURES,
-    LENGTHS,
     PROJECT_STAGES,
     ExerciseOptions,
     ExercisePlan,
@@ -71,9 +70,9 @@ def main() -> None:
         help=f"Algorithm to test with (may be repeated); choices: {', '.join(ALGORITHMS)}",
     )
     parser.add_argument(
-        "--length",
-        choices=LENGTHS,
-        help="Length of the exercise: short or long (required without -i)",
+        "--tasks",
+        type=int,
+        help="Number of tasks in the exercise (required without -i)",
     )
     parser.add_argument(
         "--dry-run",
@@ -100,8 +99,8 @@ def main() -> None:
                 missing.append("--project-stage")
             if not args.languages:
                 missing.append("--language")
-            if args.length is None:
-                missing.append("--length")
+            if args.tasks is None:
+                missing.append("--tasks")
             if missing:
                 parser.error(
                     "the following arguments are required: "
@@ -116,7 +115,7 @@ def main() -> None:
                 languages=args.languages,
                 technologies=args.technologies,
                 algorithms=args.algorithms,
-                length=args.length,
+                tasks=args.tasks,
                 story=DEFAULT_STORY,
                 dry_run=args.dry_run,
             )
@@ -126,7 +125,7 @@ def main() -> None:
             environment=opts["environment"],
             infrastructure=opts["infrastructure"],
             project_stage=opts["project_stage"],
-            length=opts["length"],
+            tasks=opts["tasks"],
             languages=opts["languages"],
             technologies=opts["technologies"],
             algorithms=opts["algorithms"],

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import typing
+from typing import Literal
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, TypedDict
+from typing import TypedDict
 
 Environment = Literal["website", "cli_app", "http_service"]
 ENVIRONMENTS: tuple[Environment, ...] = typing.get_args(Environment)
@@ -16,9 +17,6 @@ PROJECT_STAGES: tuple[ProjectStage, ...] = typing.get_args(ProjectStage)
 
 Algorithm = Literal["breadth_first_search", "depth_first_search"]
 ALGORITHMS: tuple[Algorithm, ...] = typing.get_args(Algorithm)
-
-Length = Literal["short", "long"]
-LENGTHS: tuple[Length, ...] = typing.get_args(Length)
 
 
 @dataclass(frozen=True)
@@ -47,7 +45,7 @@ class ExerciseOptions(TypedDict):
     languages: list[str]
     technologies: list[str]
     algorithms: list[Algorithm]
-    length: Length
+    tasks: int
     story: FramingStory
     dry_run: bool
 
@@ -74,7 +72,7 @@ class ExercisePlan:
     environment: Environment
     infrastructure: Infrastructure
     project_stage: ProjectStage
-    length: Length
+    tasks: int
     languages: list[str] = field(default_factory=list)
     technologies: list[str] = field(default_factory=list)
     algorithms: list[Algorithm] = field(default_factory=list)

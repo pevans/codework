@@ -21,8 +21,6 @@ _TEST_FRAMEWORKS: dict[str, tuple[str, str, str]] = {
 
 _DEFAULT_TEST_FRAMEWORK = ("a suitable test framework", "test_*", "")
 
-# How many requirements to target based on exercise length.
-_REQUIREMENT_COUNTS = {"short": "3-5", "long": "6-10"}
 
 
 def render_spec(plan: ExercisePlan) -> str:
@@ -40,7 +38,7 @@ def _front_matter(plan: ExercisePlan) -> str:
     lines.append(f"environment: {plan.environment}")
     lines.append(f"infrastructure: {plan.infrastructure}")
     lines.append(f"project_stage: {plan.project_stage}")
-    lines.append(f"length: {plan.length}")
+    lines.append(f"tasks: {plan.tasks}")
     lines.append("languages:")
     for lang in plan.languages:
         lines.append(f"  - {lang}")
@@ -73,7 +71,7 @@ def _overview(plan: ExercisePlan) -> str:
         f"The exerciser is {story.role}. {story.premise} "
         f"{story.motivation}\n"
         "\n"
-        f"Write a one-paragraph scenario description for a {plan.length} "
+        f"Write a one-paragraph scenario description for a {plan.tasks}-task "
         f"{plan.environment} exercise in {langs}{tech_note}{algo_note}. "
         "Describe the context, what the exerciser will build or fix, and "
         "why it matters. Frame the narrative around the role and premise above.\n"
@@ -81,7 +79,7 @@ def _overview(plan: ExercisePlan) -> str:
 
 
 def _requirements(plan: ExercisePlan) -> str:
-    count = _REQUIREMENT_COUNTS.get(plan.length, "3-5")
+    count = plan.tasks
     env_guidance = {
         "website": "serve HTML pages and handle user interactions in the browser",
         "cli_app": "accept command-line arguments and produce correct stdout/stderr output",
@@ -91,7 +89,7 @@ def _requirements(plan: ExercisePlan) -> str:
     return (
         "## Requirements\n"
         "\n"
-        f"Generate {count} functional requirements as a bulleted list. "
+        f"Generate exactly {count} functional requirements as a bulleted list. "
         f"Each requirement must be testable via black-box tests. "
         f"The application should {guidance}.\n"
     )

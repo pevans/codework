@@ -11,7 +11,6 @@ from codework.plan import (
     DEFAULT_STORY,
     ENVIRONMENTS,
     INFRASTRUCTURES,
-    LENGTHS,
     PROJECT_STAGES,
     ExerciseOptions,
 )
@@ -60,10 +59,12 @@ def prompt_all() -> ExerciseOptions:
         validate=lambda v: len(v) > 0 or "At least one algorithm is required.",
     ).unsafe_ask()
 
-    length = questionary.select(
-        "Length:",
-        choices=list(LENGTHS),
+    tasks_raw = questionary.text(
+        "Number of tasks:",
+        validate=lambda v: v.strip().isdigit() and int(v.strip()) > 0
+        or "Enter a positive integer.",
     ).unsafe_ask()
+    tasks = int(tasks_raw.strip())
 
     dry_run = questionary.confirm(
         "Dry run?",
@@ -78,7 +79,7 @@ def prompt_all() -> ExerciseOptions:
         languages=languages,
         technologies=technologies,
         algorithms=algorithms,
-        length=length,
+        tasks=tasks,
         story=DEFAULT_STORY,
         dry_run=dry_run,
     )
