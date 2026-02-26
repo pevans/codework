@@ -26,7 +26,7 @@ _DEFAULT_TEST_FRAMEWORK = ("a suitable test framework", "test_*", "")
 def render_spec(plan: ExercisePlan) -> str:
     """Return the full SPEC.md content for the given plan."""
     parts = [_front_matter(plan), _overview(plan), _requirements(plan),
-             _test_specification(plan)]
+             _test_specification(plan), _data_files(plan)]
     if plan.project_stage == "existing":
         parts.append(_starter_code(plan))
     parts.append(_deliverables(plan))
@@ -120,6 +120,17 @@ def _test_specification(plan: ExercisePlan) -> str:
     return "\n".join(lines)
 
 
+def _data_files(plan: ExercisePlan) -> str:
+    return (
+        "## Data files\n"
+        "\n"
+        "Generate any data files the exerciser will need to run the exercise "
+        "(e.g. sample input files, seed data, fixture JSON, CSV datasets). "
+        "These files must be ready to use -- the exerciser should not have to "
+        "create or find test data on their own.\n"
+    )
+
+
 def _starter_code(plan: ExercisePlan) -> str:
     return (
         "## Starter code\n"
@@ -151,6 +162,10 @@ def _deliverables(plan: ExercisePlan) -> str:
     ]
     if config:
         lines.append(f"- `{config}` -- test runner configuration")
+    lines.append(
+        "- Data files -- sample inputs, seed data, or fixtures as described "
+        "in the Data files section"
+    )
     if plan.project_stage == "existing":
         lines.append(
             "- Starter code files -- scaffolded source as described "
