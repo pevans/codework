@@ -1,58 +1,78 @@
 from __future__ import annotations
 
-import typing
 from collections import OrderedDict
-from typing import Literal
+from enum import StrEnum
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TypedDict
 
-Environment = Literal["website", "cli_app", "http_service"]
-ENVIRONMENTS: tuple[Environment, ...] = typing.get_args(Environment)
-ENVIRONMENT_DESCRIPTIONS: dict[str, tuple[str, str]] = {
-    "website": (
+
+class _DescriptiveEnum(StrEnum):
+    """Base for enums that carry a display name and description."""
+
+    def __new__(cls, value: str, display_name: str, description: str) -> _DescriptiveEnum:
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj._display_name = display_name
+        obj._description = description
+        return obj
+
+    @property
+    def display_name(self) -> str:
+        return self._display_name
+
+    @property
+    def description(self) -> str:
+        return self._description
+
+
+class Environment(_DescriptiveEnum):
+    website = (
+        "website",
         "Website",
         "A browser-based application that serves HTML pages and handles user interactions in the browser.",
-    ),
-    "cli_app": (
+    )
+    cli_app = (
+        "cli_app",
         "CLI Application",
         "A command-line program that accepts arguments and flags, reads from stdin or files, and produces output on stdout/stderr.",
-    ),
-    "http_service": (
+    )
+    http_service = (
+        "http_service",
         "HTTP Service",
         "A backend service that exposes HTTP/REST endpoints and returns JSON or other structured responses.",
-    ),
-}
+    )
 
-Infrastructure = Literal["local", "docker", "cloud"]
-INFRASTRUCTURES: tuple[Infrastructure, ...] = typing.get_args(Infrastructure)
-INFRASTRUCTURE_DESCRIPTIONS: dict[str, tuple[str, str]] = {
-    "local": (
+
+class Infrastructure(_DescriptiveEnum):
+    local = (
+        "local",
         "Local",
         "Runs directly on the developer's machine with no containerization or remote deployment.",
-    ),
-    "docker": (
+    )
+    docker = (
+        "docker",
         "Docker",
         "Packaged as a Docker container with a Dockerfile and optional docker-compose configuration.",
-    ),
-    "cloud": (
+    )
+    cloud = (
+        "cloud",
         "Cloud",
         "Deployed to a cloud platform (e.g. AWS, GCP, or Azure) with infrastructure-as-code or platform-specific configuration.",
-    ),
-}
+    )
 
-ProjectStage = Literal["greenfield", "existing"]
-PROJECT_STAGES: tuple[ProjectStage, ...] = typing.get_args(ProjectStage)
-PROJECT_STAGE_DESCRIPTIONS: dict[str, tuple[str, str]] = {
-    "greenfield": (
+
+class ProjectStage(_DescriptiveEnum):
+    greenfield = (
+        "greenfield",
         "Greenfield",
         "The exerciser starts from scratch -- no existing code is provided, and they must build the entire project.",
-    ),
-    "existing": (
+    )
+    existing = (
+        "existing",
         "Existing Codebase",
         "The exerciser receives a partially-built project with starter code and must extend, fix, or complete it.",
-    ),
-}
+    )
 
 Algorithm = str
 
@@ -323,6 +343,20 @@ class ExercisePlan:
     algorithms: list[Algorithm] = field(default_factory=list)
     story: FramingStory = field(default_factory=lambda: DEFAULT_STORY)
     files: list[FileSpec] = field(default_factory=list)
+
+    @classmethod
+    def from_options(cls, opts: ExerciseOptions) -> ExercisePlan:
+        return cls(
+            root=opts["output_dir"],
+            environment=opts["environment"],
+            infrastructure=opts["infrastructure"],
+            project_stage=opts["project_stage"],
+            tasks=opts["tasks"],
+            languages=opts["languages"],
+            technologies=opts["technologies"],
+            algorithms=opts["algorithms"],
+            story=opts["story"],
+        )
 
     def add_file(
         self,

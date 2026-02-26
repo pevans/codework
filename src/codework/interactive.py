@@ -10,10 +10,10 @@ from questionary import Choice, Separator
 from codework.plan import (
     ALGORITHM_CATEGORIES,
     DEFAULT_STORY,
-    ENVIRONMENTS,
-    INFRASTRUCTURES,
-    PROJECT_STAGES,
+    Environment,
     ExerciseOptions,
+    Infrastructure,
+    ProjectStage,
 )
 
 
@@ -29,17 +29,17 @@ def prompt_all() -> ExerciseOptions:
 
     environment = questionary.select(
         "Environment:",
-        choices=list(ENVIRONMENTS),
+        choices=[Choice(title=e.display_name, value=e) for e in Environment],
     ).unsafe_ask()
 
     infrastructure = questionary.select(
         "Infrastructure:",
-        choices=list(INFRASTRUCTURES),
+        choices=[Choice(title=i.display_name, value=i) for i in Infrastructure],
     ).unsafe_ask()
 
     project_stage = questionary.select(
         "Project stage:",
-        choices=list(PROJECT_STAGES),
+        choices=[Choice(title=s.display_name, value=s) for s in ProjectStage],
     ).unsafe_ask()
 
     languages_raw = questionary.text(
@@ -68,8 +68,7 @@ def prompt_all() -> ExerciseOptions:
 
     tasks_raw = questionary.text(
         "Number of tasks:",
-        validate=lambda v: v.strip().isdigit() and int(v.strip()) > 0
-        or "Enter a positive integer.",
+        validate=lambda v: True if (v.strip().isdigit() and int(v.strip()) > 0) else "Enter a positive integer.",
     ).unsafe_ask()
     tasks = int(tasks_raw.strip())
 

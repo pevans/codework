@@ -11,9 +11,6 @@ from codework.plan import (
     ALGORITHM_CATEGORIES,
     ALGORITHM_DESCRIPTIONS,
     ALGORITHM_DISPLAY_NAMES,
-    ENVIRONMENT_DESCRIPTIONS,
-    INFRASTRUCTURE_DESCRIPTIONS,
-    PROJECT_STAGE_DESCRIPTIONS,
 )
 
 # Maps language names to their conventional test frameworks and file patterns.
@@ -70,36 +67,28 @@ def _front_matter(plan: ExercisePlan) -> str:
     return "\n".join(lines)
 
 
-def _algo_category_for(key: str) -> str:
-    """Return the category name for an algorithm key."""
-    for category, problems in ALGORITHM_CATEGORIES.items():
-        for k, _ in problems:
-            if k == key:
-                return category
-    return ""
+_ALGO_TO_CATEGORY: dict[str, str] = {
+    key: category
+    for category, problems in ALGORITHM_CATEGORIES.items()
+    for key, _ in problems
+}
 
 
 def _definitions(plan: ExercisePlan) -> str:
     """Render a Definitions section that explains every configured option."""
     lines = ["## Definitions", ""]
 
-    env_display, env_desc = ENVIRONMENT_DESCRIPTIONS.get(
-        plan.environment, (plan.environment, "")
-    )
-    lines.append(f"**Environment -- {env_display} (`{plan.environment}`):** {env_desc}")
+    env = plan.environment
+    lines.append(f"**Environment -- {env.display_name} (`{env}`):** {env.description}")
 
-    infra_display, infra_desc = INFRASTRUCTURE_DESCRIPTIONS.get(
-        plan.infrastructure, (plan.infrastructure, "")
-    )
+    infra = plan.infrastructure
     lines.append(
-        f"**Infrastructure -- {infra_display} (`{plan.infrastructure}`):** {infra_desc}"
+        f"**Infrastructure -- {infra.display_name} (`{infra}`):** {infra.description}"
     )
 
-    stage_display, stage_desc = PROJECT_STAGE_DESCRIPTIONS.get(
-        plan.project_stage, (plan.project_stage, "")
-    )
+    stage = plan.project_stage
     lines.append(
-        f"**Project stage -- {stage_display} (`{plan.project_stage}`):** {stage_desc}"
+        f"**Project stage -- {stage.display_name} (`{stage}`):** {stage.description}"
     )
 
     if plan.algorithms:
@@ -109,7 +98,7 @@ def _definitions(plan: ExercisePlan) -> str:
         for algo in plan.algorithms:
             display = ALGORITHM_DISPLAY_NAMES.get(algo, algo)
             desc = ALGORITHM_DESCRIPTIONS.get(algo, "")
-            category = _algo_category_for(algo)
+            category = _ALGO_TO_CATEGORY.get(algo, "")
             category_note = f" _{category}._" if category else ""
             lines.append(f"- **{display}** (`{algo}`):{category_note} {desc}")
 
@@ -126,9 +115,7 @@ def _overview(plan: ExercisePlan) -> str:
     tech_note = ""
     if plan.technologies:
         tech_note = f" using {', '.join(plan.technologies)}"
-    env_display, _ = ENVIRONMENT_DESCRIPTIONS.get(
-        plan.environment, (plan.environment, "")
-    )
+    env_display = plan.environment.display_name
     story = plan.story
     return (
         "## Overview\n"
@@ -164,7 +151,7 @@ def _requirements(plan: ExercisePlan) -> str:
 def _test_specification(plan: ExercisePlan) -> str:
     primary_lang = plan.languages[0]
     framework, pattern, config = _TEST_FRAMEWORKS.get(
-        primary_lang, _DEFAULT_TEST_FRAMEWORK
+        primary_lang.lower(), _DEFAULT_TEST_FRAMEWORK
     )
 
     lines = [
@@ -213,7 +200,7 @@ def _starter_code(_: ExercisePlan) -> str:
 
 def _deliverables(plan: ExercisePlan) -> str:
     primary_lang = plan.languages[0]
-    _, pattern, config = _TEST_FRAMEWORKS.get(primary_lang, _DEFAULT_TEST_FRAMEWORK)
+    _, pattern, config = _TEST_FRAMEWORKS.get(primary_lang.lower(), _DEFAULT_TEST_FRAMEWORK)
 
     lines = [
         "## Deliverables",

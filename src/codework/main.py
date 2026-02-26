@@ -6,11 +6,11 @@ from codework.interactive import prompt_all
 from codework.plan import (
     ALGORITHMS,
     DEFAULT_STORY,
-    ENVIRONMENTS,
-    INFRASTRUCTURES,
-    PROJECT_STAGES,
+    Environment,
     ExerciseOptions,
     ExercisePlan,
+    Infrastructure,
+    ProjectStage,
 )
 from codework.runner import dry_run, execute
 from codework.spec import render_spec
@@ -32,17 +32,17 @@ def main() -> None:
     )
     parser.add_argument(
         "--environment",
-        choices=ENVIRONMENTS,
+        choices=list(Environment),
         help="Target environment for the exercise (required without -i)",
     )
     parser.add_argument(
         "--infrastructure",
-        choices=INFRASTRUCTURES,
+        choices=list(Infrastructure),
         help="Infrastructure target for the exercise (required without -i)",
     )
     parser.add_argument(
         "--project-stage",
-        choices=PROJECT_STAGES,
+        choices=list(ProjectStage),
         help="Project stage for the exercise (required without -i)",
     )
     parser.add_argument(
@@ -99,6 +99,8 @@ def main() -> None:
                 missing.append("--project-stage")
             if not args.languages:
                 missing.append("--language")
+            if not args.algorithms:
+                missing.append("--algorithm")
             if args.tasks is None:
                 missing.append("--tasks")
             if missing:
@@ -109,9 +111,9 @@ def main() -> None:
                 )
             opts = ExerciseOptions(
                 output_dir=args.output_dir,
-                environment=args.environment,
-                infrastructure=args.infrastructure,
-                project_stage=args.project_stage,
+                environment=Environment(args.environment),
+                infrastructure=Infrastructure(args.infrastructure),
+                project_stage=ProjectStage(args.project_stage),
                 languages=args.languages,
                 technologies=args.technologies,
                 algorithms=args.algorithms,
@@ -120,17 +122,7 @@ def main() -> None:
                 dry_run=args.dry_run,
             )
 
-        plan = ExercisePlan(
-            root=opts["output_dir"],
-            environment=opts["environment"],
-            infrastructure=opts["infrastructure"],
-            project_stage=opts["project_stage"],
-            tasks=opts["tasks"],
-            languages=opts["languages"],
-            technologies=opts["technologies"],
-            algorithms=opts["algorithms"],
-            story=opts["story"],
-        )
+        plan = ExercisePlan.from_options(opts)
 
         plan.add_file(
             path="SPEC.md",

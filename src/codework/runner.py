@@ -20,21 +20,16 @@ def dry_run(plan: ExercisePlan) -> None:
 def execute(plan: ExercisePlan) -> None:
     """Write all files in the plan to the filesystem.
 
-    Raises RuntimeError if any files were skipped due to missing content,
-    since a partial write leaves the exercise directory in an incomplete state.
+    Raises RuntimeError before writing anything if any FileSpec has no content.
     """
+    missing = [str(spec.path) for spec in plan.files if spec.content is None]
+    if missing:
+        raise RuntimeError(
+            f"{len(missing)} file(s) have no content: {', '.join(missing)}"
+        )
     plan.root.mkdir(parents=True, exist_ok=True)
-    skipped: list[str] = []
     for spec in plan.files:
         dest = plan.root / spec.path
         dest.parent.mkdir(parents=True, exist_ok=True)
-        if spec.content is not None:
-            dest.write_text(spec.content)
-            print(f"Wrote: {dest}")
-        else:
-            print(f"warning: skipped (no content): {dest}", file=sys.stderr)
-            skipped.append(str(dest))
-    if skipped:
-        raise RuntimeError(
-            f"{len(skipped)} file(s) skipped due to missing content: {', '.join(skipped)}"
-        )
+        dest.write_text(spec.content)  # type: ignore[arg-type]
+        print(f"Wrote: {dest}")
