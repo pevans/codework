@@ -5,9 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import questionary
+from questionary import Choice, Separator
 
 from codework.plan import (
-    ALGORITHMS,
+    ALGORITHM_CATEGORIES,
     DEFAULT_STORY,
     ENVIRONMENTS,
     INFRASTRUCTURES,
@@ -52,9 +53,15 @@ def prompt_all() -> ExerciseOptions:
     ).unsafe_ask()
     technologies = [t.strip() for t in technologies_raw.split(",") if t.strip()]
 
+    algorithm_choices: list[Separator | Choice] = []
+    for category, problems in ALGORITHM_CATEGORIES.items():
+        algorithm_choices.append(Separator(f"── {category} ──"))
+        for key, display_name in problems:
+            algorithm_choices.append(Choice(title=display_name, value=key))
+
     algorithms = questionary.checkbox(
         "Algorithms:",
-        choices=list(ALGORITHMS),
+        choices=algorithm_choices,
         instruction="(Space to select, Enter to confirm)",
         validate=lambda v: len(v) > 0 or "At least one algorithm is required.",
     ).unsafe_ask()
