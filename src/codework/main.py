@@ -16,7 +16,9 @@ from codework.runner import dry_run, execute
 from codework.spec import render_spec
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    """build_parser returns an argument parser with all of the possible
+    command-line arguments that codework can handle."""
     parser = argparse.ArgumentParser(description="Generate code exercises")
     parser.add_argument(
         "-i",
@@ -79,6 +81,11 @@ def main() -> None:
         action="store_true",
         help="Print what would be written without touching the filesystem",
     )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
     args = parser.parse_args()
 
     try:
