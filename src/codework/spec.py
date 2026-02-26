@@ -7,6 +7,15 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from codework.plan import ExercisePlan
 
+from codework.plan import (
+    ALGORITHM_CATEGORIES,
+    ALGORITHM_DESCRIPTIONS,
+    ALGORITHM_DISPLAY_NAMES,
+    ENVIRONMENT_DESCRIPTIONS,
+    INFRASTRUCTURE_DESCRIPTIONS,
+    PROJECT_STAGE_DESCRIPTIONS,
+)
+
 # Maps language names to their conventional test frameworks and file patterns.
 _TEST_FRAMEWORKS: dict[str, tuple[str, str, str]] = {
     # (framework, test file pattern, config file)
@@ -22,11 +31,16 @@ _TEST_FRAMEWORKS: dict[str, tuple[str, str, str]] = {
 _DEFAULT_TEST_FRAMEWORK = ("a suitable test framework", "test_*", "")
 
 
-
 def render_spec(plan: ExercisePlan) -> str:
     """Return the full SPEC.md content for the given plan."""
-    parts = [_front_matter(plan), _overview(plan), _requirements(plan),
-             _test_specification(plan), _data_files(plan)]
+    parts = [
+        _front_matter(plan),
+        _definitions(plan),
+        _overview(plan),
+        _requirements(plan),
+        _test_specification(plan),
+        _data_files(plan),
+    ]
     if plan.project_stage == "existing":
         parts.append(_starter_code(plan))
     parts.append(_deliverables(plan))
@@ -56,14 +70,65 @@ def _front_matter(plan: ExercisePlan) -> str:
     return "\n".join(lines)
 
 
+def _algo_category_for(key: str) -> str:
+    """Return the category name for an algorithm key."""
+    for category, problems in ALGORITHM_CATEGORIES.items():
+        for k, _ in problems:
+            if k == key:
+                return category
+    return ""
+
+
+def _definitions(plan: ExercisePlan) -> str:
+    """Render a Definitions section that explains every configured option."""
+    lines = ["## Definitions", ""]
+
+    env_display, env_desc = ENVIRONMENT_DESCRIPTIONS.get(
+        plan.environment, (plan.environment, "")
+    )
+    lines.append(f"**Environment -- {env_display} (`{plan.environment}`):** {env_desc}")
+
+    infra_display, infra_desc = INFRASTRUCTURE_DESCRIPTIONS.get(
+        plan.infrastructure, (plan.infrastructure, "")
+    )
+    lines.append(
+        f"**Infrastructure -- {infra_display} (`{plan.infrastructure}`):** {infra_desc}"
+    )
+
+    stage_display, stage_desc = PROJECT_STAGE_DESCRIPTIONS.get(
+        plan.project_stage, (plan.project_stage, "")
+    )
+    lines.append(
+        f"**Project stage -- {stage_display} (`{plan.project_stage}`):** {stage_desc}"
+    )
+
+    if plan.algorithms:
+        lines.append("")
+        lines.append("**Algorithms:**")
+        lines.append("")
+        for algo in plan.algorithms:
+            display = ALGORITHM_DISPLAY_NAMES.get(algo, algo)
+            desc = ALGORITHM_DESCRIPTIONS.get(algo, "")
+            category = _algo_category_for(algo)
+            category_note = f" _{category}._" if category else ""
+            lines.append(f"- **{display}** (`{algo}`):{category_note} {desc}")
+
+    lines.append("")
+    return "\n".join(lines)
+
+
 def _overview(plan: ExercisePlan) -> str:
     langs = ", ".join(plan.languages)
     algo_note = ""
     if plan.algorithms:
-        algo_note = f" that incorporates {', '.join(plan.algorithms)}"
+        algo_names = [ALGORITHM_DISPLAY_NAMES.get(a, a) for a in plan.algorithms]
+        algo_note = f" that incorporates {', '.join(algo_names)}"
     tech_note = ""
     if plan.technologies:
         tech_note = f" using {', '.join(plan.technologies)}"
+    env_display, _ = ENVIRONMENT_DESCRIPTIONS.get(
+        plan.environment, (plan.environment, "")
+    )
     story = plan.story
     return (
         "## Overview\n"
@@ -72,9 +137,10 @@ def _overview(plan: ExercisePlan) -> str:
         f"{story.motivation}\n"
         "\n"
         f"Write a one-paragraph scenario description for a {plan.tasks}-task "
-        f"{plan.environment} exercise in {langs}{tech_note}{algo_note}. "
+        f"{env_display.lower()} exercise in {langs}{tech_note}{algo_note}. "
         "Describe the context, what the exerciser will build or fix, and "
-        "why it matters. Frame the narrative around the role and premise above.\n"
+        "why it matters. Frame the narrative around the role and premise above. "
+        "See the Definitions section for details on each term.\n"
     )
 
 
@@ -113,14 +179,13 @@ def _test_specification(plan: ExercisePlan) -> str:
     if config:
         lines.append(f"- **Test runner config:** `{config}`")
     lines.append(
-        "- **Test categories:** include happy-path, edge-case, "
-        "and error-handling tests"
+        "- **Test categories:** include happy-path, edge-case, and error-handling tests"
     )
     lines.append("")
     return "\n".join(lines)
 
 
-def _data_files(plan: ExercisePlan) -> str:
+def _data_files(_: ExercisePlan) -> str:
     return (
         "## Data files\n"
         "\n"
@@ -131,7 +196,7 @@ def _data_files(plan: ExercisePlan) -> str:
     )
 
 
-def _starter_code(plan: ExercisePlan) -> str:
+def _starter_code(_: ExercisePlan) -> str:
     return (
         "## Starter code\n"
         "\n"
@@ -148,9 +213,7 @@ def _starter_code(plan: ExercisePlan) -> str:
 
 def _deliverables(plan: ExercisePlan) -> str:
     primary_lang = plan.languages[0]
-    _, pattern, config = _TEST_FRAMEWORKS.get(
-        primary_lang, _DEFAULT_TEST_FRAMEWORK
-    )
+    _, pattern, config = _TEST_FRAMEWORKS.get(primary_lang, _DEFAULT_TEST_FRAMEWORK)
 
     lines = [
         "## Deliverables",

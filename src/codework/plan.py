@@ -9,12 +9,50 @@ from typing import TypedDict
 
 Environment = Literal["website", "cli_app", "http_service"]
 ENVIRONMENTS: tuple[Environment, ...] = typing.get_args(Environment)
+ENVIRONMENT_DESCRIPTIONS: dict[str, tuple[str, str]] = {
+    "website": (
+        "Website",
+        "A browser-based application that serves HTML pages and handles user interactions in the browser.",
+    ),
+    "cli_app": (
+        "CLI Application",
+        "A command-line program that accepts arguments and flags, reads from stdin or files, and produces output on stdout/stderr.",
+    ),
+    "http_service": (
+        "HTTP Service",
+        "A backend service that exposes HTTP/REST endpoints and returns JSON or other structured responses.",
+    ),
+}
 
 Infrastructure = Literal["local", "docker", "cloud"]
 INFRASTRUCTURES: tuple[Infrastructure, ...] = typing.get_args(Infrastructure)
+INFRASTRUCTURE_DESCRIPTIONS: dict[str, tuple[str, str]] = {
+    "local": (
+        "Local",
+        "Runs directly on the developer's machine with no containerization or remote deployment.",
+    ),
+    "docker": (
+        "Docker",
+        "Packaged as a Docker container with a Dockerfile and optional docker-compose configuration.",
+    ),
+    "cloud": (
+        "Cloud",
+        "Deployed to a cloud platform (e.g. AWS, GCP, or Azure) with infrastructure-as-code or platform-specific configuration.",
+    ),
+}
 
 ProjectStage = Literal["greenfield", "existing"]
 PROJECT_STAGES: tuple[ProjectStage, ...] = typing.get_args(ProjectStage)
+PROJECT_STAGE_DESCRIPTIONS: dict[str, tuple[str, str]] = {
+    "greenfield": (
+        "Greenfield",
+        "The exerciser starts from scratch -- no existing code is provided, and they must build the entire project.",
+    ),
+    "existing": (
+        "Existing Codebase",
+        "The exerciser receives a partially-built project with starter code and must extend, fix, or complete it.",
+    ),
+}
 
 Algorithm = str
 
@@ -132,6 +170,97 @@ ALGORITHM_DISPLAY_NAMES: dict[str, str] = {
     key: name
     for problems in ALGORITHM_CATEGORIES.values()
     for key, name in problems
+}
+
+ALGORITHM_DESCRIPTIONS: dict[str, str] = {
+    # Arrays & Hashing
+    "two_sum": "Given an array of integers and a target, find two numbers that add up to the target.",
+    "rotate_array": "Rotate an array of n elements to the right by k steps.",
+    "longest_substring_without_repeating_characters": "Find the length of the longest substring without repeating characters.",
+    "product_of_array_except_self": "Return an array where each element is the product of all other elements, without using division.",
+    "group_anagrams": "Group strings that are anagrams of each other.",
+    "subarray_sum_equals_k": "Find the total number of contiguous subarrays whose sum equals a given value k.",
+    "lru_cache": "Design a data structure that supports get and put operations with least-recently-used eviction.",
+    # Two Pointers & Sliding Window
+    "three_sum": "Find all unique triplets in an array that sum to zero.",
+    "container_with_most_water": "Find two lines that, together with the x-axis, form a container holding the most water.",
+    "trapping_rain_water": "Compute how much water can be trapped between bars of varying heights after rain.",
+    "min_window_substring": "Find the smallest substring that contains all characters of a given pattern.",
+    "linked_list_cycle": "Determine whether a linked list contains a cycle using the fast/slow pointer technique.",
+    "happy_number": "Determine whether repeatedly summing the squares of a number's digits eventually reaches 1.",
+    "find_duplicate_number": "Find the duplicate in an array of n+1 integers in the range [1, n] without modifying the array.",
+    # Linked Lists
+    "reverse_a_linked_list": "Reverse a singly linked list iteratively or recursively.",
+    "merge_two_sorted_lists": "Merge two sorted linked lists into one sorted linked list.",
+    "detect_cycle": "Detect whether a linked list has a cycle and find the cycle's start node.",
+    "copy_list_with_random_pointer": "Deep-copy a linked list where each node has an additional pointer to a random node.",
+    # Stacks & Queues
+    "valid_parentheses": "Determine if a string of brackets is properly nested and balanced.",
+    "daily_temperatures": "For each day's temperature, find how many days until a warmer temperature.",
+    "largest_rectangle_in_histogram": "Find the area of the largest rectangle that fits within a histogram's bars.",
+    "sliding_window_maximum": "Find the maximum value in each sliding window of size k across an array.",
+    # Binary Search
+    "search_in_rotated_sorted_array": "Search for a target value in a sorted array that has been rotated at an unknown pivot.",
+    "find_minimum_in_rotated_sorted_array": "Find the minimum element in a sorted array that has been rotated.",
+    "koko_eating_bananas": "Find the minimum eating speed so that all banana piles are finished within h hours.",
+    "ship_packages_in_d_days": "Find the minimum ship capacity to deliver all packages within d days.",
+    "split_array_largest_sum": "Split an array into m subarrays to minimize the largest subarray sum.",
+    # Trees
+    "invert_binary_tree": "Swap the left and right children of every node in a binary tree.",
+    "validate_bst": "Determine whether a binary tree satisfies the binary search tree property.",
+    "serialize_deserialize_binary_tree": "Convert a binary tree to a string representation and reconstruct it.",
+    "binary_tree_maximum_path_sum": "Find the path with the maximum sum between any two nodes in a binary tree.",
+    "level_order_traversal": "Visit all nodes of a binary tree level by level, left to right.",
+    "path_sum": "Determine if a binary tree has a root-to-leaf path whose node values sum to a target.",
+    "diameter_of_binary_tree": "Find the length of the longest path between any two nodes in a binary tree.",
+    # Heaps
+    "kth_largest_element": "Find the kth largest element in an unsorted array efficiently.",
+    "merge_k_sorted_lists": "Merge k sorted linked lists into a single sorted list.",
+    "find_median_from_data_stream": "Design a structure that supports adding numbers and finding the current median efficiently.",
+    # Tries
+    "implement_trie": "Build a prefix tree supporting insert, search, and startsWith operations.",
+    "word_search_ii": "Find all words from a dictionary that can be formed on a letter board by tracing adjacent cells.",
+    "design_search_autocomplete": "Design a system that suggests top completions as a user types a search query.",
+    # Graphs
+    "breadth_first_search": "Traverse a graph level by level from a starting node using a queue.",
+    "depth_first_search": "Traverse a graph by exploring as far as possible along each branch before backtracking.",
+    "number_of_islands": "Count the number of connected land regions in a 2D grid of land and water cells.",
+    "clone_graph": "Create a deep copy of an undirected graph, preserving its structure.",
+    "course_schedule": "Determine whether all courses can be finished given prerequisite relationships (cycle detection).",
+    "network_delay_time": "Find the time for a signal to reach all nodes in a weighted directed graph (shortest paths).",
+    "topological_sort": "Order directed-graph nodes so every edge goes from earlier to later in the ordering.",
+    "alien_dictionary": "Derive the character ordering of an alien language from a sorted list of words.",
+    # Union-Find
+    "number_of_connected_components": "Count the number of connected components in an undirected graph.",
+    "redundant_connection": "Find the edge that, if removed, makes an undirected graph a tree.",
+    "accounts_merge": "Merge accounts that share email addresses using union-find.",
+    "number_of_provinces": "Count groups of directly or indirectly connected cities.",
+    "longest_consecutive_sequence": "Find the length of the longest sequence of consecutive integers in an unsorted array.",
+    # Intervals
+    "merge_intervals": "Merge all overlapping intervals into non-overlapping ones.",
+    "meeting_rooms": "Determine if a person can attend all meetings or find the minimum rooms needed.",
+    "non_overlapping_intervals": "Find the minimum number of intervals to remove to make the rest non-overlapping.",
+    # Dynamic Programming
+    "coin_change": "Find the fewest coins needed to make a given amount, or determine it is impossible.",
+    "house_robber": "Maximize the amount robbed from houses in a row without robbing two adjacent houses.",
+    "word_break": "Determine if a string can be segmented into words from a given dictionary.",
+    "edit_distance": "Find the minimum insertions, deletions, and substitutions to transform one string into another.",
+    # Greedy
+    "jump_game": "Determine whether you can reach the last index by jumping from each position.",
+    "activity_selection": "Select the maximum number of non-overlapping activities from a set of start/end times.",
+    "task_scheduler": "Find the minimum time to execute all tasks with a cooldown between identical tasks.",
+    "gas_station": "Find the starting gas station that allows a complete circuit, or determine it is impossible.",
+    # Backtracking
+    "n_queens": "Place n queens on an n x n chessboard so no two queens threaten each other.",
+    "permutations": "Generate all possible orderings of a collection of distinct elements.",
+    "combinations": "Generate all ways to choose k elements from a set of n.",
+    "subsets": "Generate all possible subsets of a given set of distinct elements.",
+    "sudoku_solver": "Fill a 9x9 Sudoku grid so every row, column, and 3x3 box contains 1--9.",
+    "word_search": "Determine if a word exists in a 2D grid by tracing adjacent cells.",
+    # Bit Manipulation
+    "single_number": "Find the element that appears only once when every other element appears twice.",
+    "counting_bits": "For every number from 0 to n, count the number of 1-bits in its binary representation.",
+    "reverse_bits": "Reverse the bit ordering of a 32-bit unsigned integer.",
 }
 
 
