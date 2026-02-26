@@ -91,7 +91,6 @@ ALGORITHM_CATEGORIES: OrderedDict[str, list[tuple[str, str]]] = OrderedDict([
         ("container_with_most_water", "Container With Most Water"),
         ("trapping_rain_water", "Trapping Rain Water"),
         ("min_window_substring", "Min Window Substring"),
-        ("linked_list_cycle", "Linked List Cycle"),
         ("happy_number", "Happy Number"),
         ("find_duplicate_number", "Find Duplicate Number"),
     ]),
@@ -206,13 +205,12 @@ ALGORITHM_DESCRIPTIONS: dict[str, str] = {
     "container_with_most_water": "Find two lines that, together with the x-axis, form a container holding the most water.",
     "trapping_rain_water": "Compute how much water can be trapped between bars of varying heights after rain.",
     "min_window_substring": "Find the smallest substring that contains all characters of a given pattern.",
-    "linked_list_cycle": "Determine whether a linked list contains a cycle using the fast/slow pointer technique.",
     "happy_number": "Determine whether repeatedly summing the squares of a number's digits eventually reaches 1.",
     "find_duplicate_number": "Find the duplicate in an array of n+1 integers in the range [1, n] without modifying the array.",
     # Linked Lists
     "reverse_a_linked_list": "Reverse a singly linked list iteratively or recursively.",
     "merge_two_sorted_lists": "Merge two sorted linked lists into one sorted linked list.",
-    "detect_cycle": "Detect whether a linked list has a cycle and find the cycle's start node.",
+    "detect_cycle": "Detect whether a linked list has a cycle using the fast/slow pointer technique and find the cycle's start node.",
     "copy_list_with_random_pointer": "Deep-copy a linked list where each node has an additional pointer to a random node.",
     # Stacks & Queues
     "valid_parentheses": "Determine if a string of brackets is properly nested and balanced.",
