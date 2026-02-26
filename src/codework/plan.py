@@ -10,6 +10,9 @@ from typing import TypedDict
 class _DescriptiveEnum(StrEnum):
     """Base for enums that carry a display name and description."""
 
+    _display_name: str
+    _description: str
+
     def __new__(cls, value: str, display_name: str, description: str) -> _DescriptiveEnum:
         obj = str.__new__(cls, value)
         obj._value_ = value
