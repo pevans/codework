@@ -25,7 +25,7 @@ def _make_plan(root: Path, **overrides) -> ExercisePlan:
         story=DEFAULT_STORY,
     )
     defaults.update(overrides)
-    return ExercisePlan(**defaults)
+    return ExercisePlan(**defaults)  # type: ignore[arg-type]
 
 
 def test_execute_writes_files(tmp_path: Path):
@@ -54,3 +54,64 @@ def test_dry_run_does_not_write_files(tmp_path: Path, capsys):
     captured = capsys.readouterr()
     assert "Would write" in captured.out
     assert "Hello!" in captured.out
+
+
+def test_dry_run_no_content_shows_placeholder(tmp_path: Path, capsys):
+    plan = _make_plan(tmp_path / "out")
+    plan.add_file("stub.txt", "placeholder file")
+    dry_run(plan)
+    captured = capsys.readouterr()
+    assert "(no content yet)" in captured.out
+
+
+def test_dry_run_output_includes_root_and_description(tmp_path: Path, capsys):
+    plan = _make_plan(tmp_path / "out")
+    plan.add_file("hello.txt", "greeting", content="Hello!")
+    dry_run(plan)
+    captured = capsys.readouterr()
+    assert f"Dry run -- root: {tmp_path / 'out'}" in captured.out
+    assert "# greeting" in captured.out
+
+
+def test_execute_prints_wrote_lines(tmp_path: Path, capsys):
+    plan = _make_plan(tmp_path / "out")
+    plan.add_file("a.txt", "first", content="A")
+    plan.add_file("b.txt", "second", content="B")
+    execute(plan)
+    captured = capsys.readouterr()
+    assert captured.out.count("Wrote:") == 2
+    assert str(tmp_path / "out" / "a.txt") in captured.out
+    assert str(tmp_path / "out" / "b.txt") in captured.out
+
+
+def test_execute_creates_deeply_nested_root(tmp_path: Path):
+    deep_root = tmp_path / "a" / "b" / "c" / "d"
+    plan = _make_plan(deep_root)
+    plan.add_file("file.txt", "deep", content="deep content")
+    execute(plan)
+    assert (deep_root / "file.txt").read_text() == "deep content"
+
+
+def test_execute_with_empty_files_list(tmp_path: Path):
+    plan = _make_plan(tmp_path / "out")
+    execute(plan)
+    assert (tmp_path / "out").is_dir()
+
+
+def test_execute_root_already_exists(tmp_path: Path):
+    root = tmp_path / "out"
+    root.mkdir()
+    plan = _make_plan(root)
+    plan.add_file("file.txt", "test", content="ok")
+    execute(plan)
+    assert (root / "file.txt").read_text() == "ok"
+
+
+def test_execute_multiple_missing_files_error(tmp_path: Path):
+    plan = _make_plan(tmp_path / "out")
+    plan.add_file("a.txt", "first")
+    plan.add_file("b.txt", "second")
+    with pytest.raises(RuntimeError, match="2 file\\(s\\)") as exc_info:
+        execute(plan)
+    assert "a.txt" in str(exc_info.value)
+    assert "b.txt" in str(exc_info.value)
