@@ -38,8 +38,10 @@ def render_spec(plan: ExercisePlan) -> str:
         _test_specification(plan),
         _data_files(plan),
     ]
+
     if plan.project_stage == "existing":
         parts.append(_starter_code(plan))
+
     parts.append(_deliverables(plan))
     return "\n".join(parts)
 
@@ -50,17 +52,21 @@ def _front_matter(plan: ExercisePlan) -> str:
     lines.append(f"infrastructure: {plan.infrastructure}")
     lines.append(f"project_stage: {plan.project_stage}")
     lines.append(f"tasks: {plan.tasks}")
+
     lines.append("languages:")
     for lang in plan.languages:
         lines.append(f"  - {lang}")
+
     if plan.technologies:
         lines.append("technologies:")
         for tech in plan.technologies:
             lines.append(f"  - {tech}")
+
     if plan.algorithms:
         lines.append("algorithms:")
         for algo in plan.algorithms:
             lines.append(f"  - {algo}")
+
     lines.append(f"story: {plan.story.name}")
     lines.append("---")
     lines.append("")
@@ -108,15 +114,19 @@ def _definitions(plan: ExercisePlan) -> str:
 
 def _overview(plan: ExercisePlan) -> str:
     langs = ", ".join(plan.languages)
+
     algo_note = ""
     if plan.algorithms:
         algo_names = [ALGORITHM_DISPLAY_NAMES.get(a, a) for a in plan.algorithms]
         algo_note = f" that incorporates {', '.join(algo_names)}"
+
     tech_note = ""
     if plan.technologies:
         tech_note = f" using {', '.join(plan.technologies)}"
+
     env_display = plan.environment.display_name
     story = plan.story
+
     return (
         "## Overview\n"
         "\n"
@@ -133,12 +143,14 @@ def _overview(plan: ExercisePlan) -> str:
 
 def _requirements(plan: ExercisePlan) -> str:
     count = plan.tasks
+
     env_guidance = {
         "website": "serve HTML pages and handle user interactions in the browser",
         "cli_app": "accept command-line arguments and produce correct stdout/stderr output",
         "http_service": "expose HTTP endpoints and return correct status codes and response bodies",
     }
     guidance = env_guidance.get(plan.environment, "function correctly")
+
     return (
         "## Requirements\n"
         "\n"
@@ -163,11 +175,13 @@ def _test_specification(plan: ExercisePlan) -> str:
         f"- **Test framework:** {framework}",
         f"- **Test file pattern:** `{pattern}`",
     ]
+
     if config:
         lines.append(f"- **Test runner config:** `{config}`")
     lines.append(
         "- **Test categories:** include happy-path, edge-case, and error-handling tests"
     )
+
     lines.append("")
     return "\n".join(lines)
 
@@ -200,7 +214,9 @@ def _starter_code(_: ExercisePlan) -> str:
 
 def _deliverables(plan: ExercisePlan) -> str:
     primary_lang = plan.languages[0]
-    _, pattern, config = _TEST_FRAMEWORKS.get(primary_lang.lower(), _DEFAULT_TEST_FRAMEWORK)
+    _, pattern, config = _TEST_FRAMEWORKS.get(
+        primary_lang.lower(), _DEFAULT_TEST_FRAMEWORK
+    )
 
     lines = [
         "## Deliverables",
@@ -210,16 +226,19 @@ def _deliverables(plan: ExercisePlan) -> str:
         "- `README.md` -- human-readable exercise instructions for the exerciser",
         f"- Test files (`{pattern}`) -- black-box tests for every requirement",
     ]
+
     if config:
         lines.append(f"- `{config}` -- test runner configuration")
     lines.append(
         "- Data files -- sample inputs, seed data, or fixtures as described "
         "in the Data files section"
     )
+
     if plan.project_stage == "existing":
         lines.append(
             "- Starter code files -- scaffolded source as described "
             "in the Starter code section"
         )
+
     lines.append("")
     return "\n".join(lines)
