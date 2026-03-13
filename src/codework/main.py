@@ -72,6 +72,12 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"Algorithm to test with (may be repeated); choices: {', '.join(ALGORITHMS)}",
     )
     parser.add_argument(
+        "--prompt",
+        type=str,
+        default="",
+        help="Free-form prompt describing the exercise topic (used in place of --algorithm)",
+    )
+    parser.add_argument(
         "--tasks",
         type=int,
         help="Number of tasks in the exercise (required without -i)",
@@ -106,8 +112,8 @@ def main() -> None:
                 missing.append("--project-stage")
             if not args.languages:
                 missing.append("--language")
-            if not args.algorithms:
-                missing.append("--algorithm")
+            if not args.algorithms and not args.prompt:
+                missing.append("--algorithm or --prompt")
             if args.tasks is None:
                 missing.append("--tasks")
             if missing:
@@ -124,6 +130,7 @@ def main() -> None:
                 languages=args.languages,
                 technologies=args.technologies,
                 algorithms=args.algorithms,
+                prompt=args.prompt,
                 tasks=args.tasks,
                 story=DEFAULT_STORY,
                 dry_run=args.dry_run,

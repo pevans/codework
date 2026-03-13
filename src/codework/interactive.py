@@ -53,18 +53,32 @@ def prompt_all() -> ExerciseOptions:
     ).unsafe_ask()
     technologies = [t.strip() for t in technologies_raw.split(",") if t.strip()]
 
-    algorithm_choices: list[Separator | Choice] = []
-    for category, problems in ALGORITHM_CATEGORIES.items():
-        algorithm_choices.append(Separator(f"── {category} ──"))
-        for key, display_name in problems:
-            algorithm_choices.append(Choice(title=display_name, value=key))
-
-    algorithms = questionary.checkbox(
-        "Algorithms:",
-        choices=algorithm_choices,
-        instruction="(Space to select, Enter to confirm)",
-        validate=lambda v: len(v) > 0 or "At least one algorithm is required.",
+    use_prompt = questionary.confirm(
+        "Use a free-form prompt instead of selecting algorithms?",
+        default=False,
     ).unsafe_ask()
+
+    algorithms: list[str] = []
+    prompt = ""
+
+    if use_prompt:
+        prompt = questionary.text(
+            "Exercise prompt:",
+            validate=lambda v: bool(v.strip()) or "A prompt is required.",
+        ).unsafe_ask()
+    else:
+        algorithm_choices: list[Separator | Choice] = []
+        for category, problems in ALGORITHM_CATEGORIES.items():
+            algorithm_choices.append(Separator(f"── {category} ──"))
+            for key, display_name in problems:
+                algorithm_choices.append(Choice(title=display_name, value=key))
+
+        algorithms = questionary.checkbox(
+            "Algorithms:",
+            choices=algorithm_choices,
+            instruction="(Space to select, Enter to confirm)",
+            validate=lambda v: len(v) > 0 or "At least one algorithm is required.",
+        ).unsafe_ask()
 
     tasks_raw = questionary.text(
         "Number of tasks:",
@@ -85,6 +99,7 @@ def prompt_all() -> ExerciseOptions:
         languages=languages,
         technologies=technologies,
         algorithms=algorithms,
+        prompt=prompt,
         tasks=tasks,
         story=DEFAULT_STORY,
         dry_run=dry_run,

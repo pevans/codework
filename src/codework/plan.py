@@ -311,6 +311,7 @@ class ExerciseOptions(TypedDict):
     languages: list[str]
     technologies: list[str]
     algorithms: list[Algorithm]
+    prompt: str
     tasks: int
     story: FramingStory
     dry_run: bool
@@ -342,6 +343,7 @@ class ExercisePlan:
     languages: list[str] = field(default_factory=list)
     technologies: list[str] = field(default_factory=list)
     algorithms: list[Algorithm] = field(default_factory=list)
+    prompt: str = ""
     story: FramingStory = field(default_factory=lambda: DEFAULT_STORY)
     files: list[FileSpec] = field(default_factory=list)
 
@@ -356,6 +358,7 @@ class ExercisePlan:
             languages=opts["languages"],
             technologies=opts["technologies"],
             algorithms=opts["algorithms"],
+            prompt=opts["prompt"],
             story=opts["story"],
         )
 

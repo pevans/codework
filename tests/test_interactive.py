@@ -25,7 +25,10 @@ def _setup_mock(mock_q, **overrides):
         "5",                   # tasks
     ]
     mock_q.checkbox.return_value.unsafe_ask.return_value = ["two_sum"]
-    mock_q.confirm.return_value.unsafe_ask.return_value = False
+    mock_q.confirm.return_value.unsafe_ask.side_effect = [
+        False,  # use prompt? no
+        False,  # dry run?
+    ]
 
     for key, value in overrides.items():
         parts = key.split(".")
@@ -51,6 +54,7 @@ def test_prompt_all_returns_exercise_options(mock_q):
     assert isinstance(opts["technologies"], list)
     assert isinstance(opts["algorithms"], list)
     assert len(opts["algorithms"]) > 0
+    assert isinstance(opts["prompt"], str)
     assert isinstance(opts["tasks"], int)
     assert opts["tasks"] > 0
     assert isinstance(opts["dry_run"], bool)
@@ -111,7 +115,10 @@ def test_prompt_all_empty_technologies(mock_q):
 @patch("codework.interactive.questionary")
 def test_prompt_all_dry_run_mirrors_confirm(mock_q):
     _setup_mock(mock_q, **{
-        "confirm.return_value.unsafe_ask.return_value": True,
+        "confirm.return_value.unsafe_ask.side_effect": [
+            False,  # use prompt? no
+            True,   # dry run? yes
+        ],
     })
 
     from codework.interactive import prompt_all
@@ -182,6 +189,28 @@ def test_prompt_all_multiple_algorithms(mock_q):
     opts = prompt_all()
 
     assert opts["algorithms"] == ["two_sum", "coin_change", "n_queens"]
+
+
+@patch("codework.interactive.questionary")
+def test_prompt_all_with_prompt_instead_of_algorithms(mock_q):
+    _setup_mock(mock_q, **{
+        "confirm.return_value.unsafe_ask.side_effect": [
+            True,   # use prompt? yes
+            False,  # dry run? no
+        ],
+        "text.return_value.unsafe_ask.side_effect": [
+            "python",                       # languages
+            "react",                        # technologies
+            "Build a bookstore API",        # prompt
+            "3",                            # tasks
+        ],
+    })
+
+    from codework.interactive import prompt_all
+    opts = prompt_all()
+
+    assert opts["prompt"] == "Build a bookstore API"
+    assert opts["algorithms"] == []
 
 
 @patch("codework.interactive.questionary")

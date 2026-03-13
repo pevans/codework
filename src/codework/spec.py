@@ -67,6 +67,9 @@ def _front_matter(plan: ExercisePlan) -> str:
         for algo in plan.algorithms:
             lines.append(f"  - {algo}")
 
+    if plan.prompt:
+        lines.append(f"prompt: {plan.prompt}")
+
     lines.append(f"story: {plan.story.name}")
     lines.append("---")
     lines.append("")
@@ -108,6 +111,10 @@ def _definitions(plan: ExercisePlan) -> str:
             category_note = f" _{category}._" if category else ""
             lines.append(f"- **{display}** (`{algo}`):{category_note} {desc}")
 
+    if plan.prompt:
+        lines.append("")
+        lines.append(f"**Prompt:** {plan.prompt}")
+
     lines.append("")
     return "\n".join(lines)
 
@@ -119,6 +126,8 @@ def _overview(plan: ExercisePlan) -> str:
     if plan.algorithms:
         algo_names = [ALGORITHM_DISPLAY_NAMES.get(a, a) for a in plan.algorithms]
         algo_note = f" that incorporates {', '.join(algo_names)}"
+    elif plan.prompt:
+        algo_note = f" based on the following prompt: {plan.prompt}"
 
     tech_note = ""
     if plan.technologies:

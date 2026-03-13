@@ -23,10 +23,10 @@ def test_missing_required_args_without_interactive():
     assert result.returncode != 0
     assert "output_dir" in result.stderr
     assert "--environment" in result.stderr
-    assert "--algorithm" in result.stderr
+    assert "--algorithm or --prompt" in result.stderr
 
 
-def test_missing_algorithm_is_reported():
+def test_missing_algorithm_or_prompt_is_reported():
     result = _run_codework(
         "/tmp/out",
         "--environment", "website",
@@ -36,7 +36,21 @@ def test_missing_algorithm_is_reported():
         "--tasks", "3",
     )
     assert result.returncode != 0
-    assert "--algorithm" in result.stderr
+    assert "--algorithm or --prompt" in result.stderr
+
+
+def test_prompt_flag_accepted_without_algorithm():
+    result = _run_codework(
+        "/tmp/out",
+        "--environment", "website",
+        "--infrastructure", "local",
+        "--project-stage", "greenfield",
+        "--language", "python",
+        "--prompt", "Build a REST API for a bookstore",
+        "--tasks", "3",
+        "--dry-run",
+    )
+    assert result.returncode == 0
 
 
 def test_interactive_flag_accepted():

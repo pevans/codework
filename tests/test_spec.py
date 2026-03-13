@@ -22,6 +22,7 @@ def _make_plan(**overrides) -> ExercisePlan:
         languages=["python"],
         technologies=[],
         algorithms=["two_sum"],
+        prompt="",
         story=DEFAULT_STORY,
     )
     defaults.update(overrides)
@@ -198,6 +199,38 @@ def test_render_spec_overview_no_algo_note_when_empty():
     requirements_start = spec.index("## Requirements")
     overview = spec[overview_start:requirements_start]
     assert "incorporates" not in overview
+
+
+def test_render_spec_front_matter_with_prompt():
+    spec = render_spec(_make_plan(algorithms=[], prompt="Build a bookstore API"))
+    assert "prompt: Build a bookstore API" in spec
+
+
+def test_render_spec_front_matter_no_prompt():
+    spec = render_spec(_make_plan(prompt=""))
+    assert "prompt:" not in spec
+
+
+def test_render_spec_definitions_with_prompt():
+    spec = render_spec(_make_plan(algorithms=[], prompt="Build a bookstore API"))
+    assert "**Prompt:** Build a bookstore API" in spec
+
+
+def test_render_spec_overview_uses_prompt_when_no_algorithms():
+    spec = render_spec(_make_plan(algorithms=[], prompt="Build a bookstore API"))
+    overview_start = spec.index("## Overview")
+    requirements_start = spec.index("## Requirements")
+    overview = spec[overview_start:requirements_start]
+    assert "based on the following prompt: Build a bookstore API" in overview
+
+
+def test_render_spec_overview_prefers_algorithms_over_prompt():
+    spec = render_spec(_make_plan(algorithms=["two_sum"], prompt="some prompt"))
+    overview_start = spec.index("## Overview")
+    requirements_start = spec.index("## Requirements")
+    overview = spec[overview_start:requirements_start]
+    assert "incorporates" in overview
+    assert "based on the following prompt" not in overview
 
 
 def test_render_spec_each_environment_guidance():
